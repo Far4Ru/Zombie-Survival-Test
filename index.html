@@ -1,0 +1,402 @@
+
+<html>
+	<head>
+		<style>
+			h1, p, div {text-align: center}
+		</style>
+		<title>Тест на выживание</title>
+		<script src="jquery-3.4.1.min.js"></script>
+	</head>
+	<body>
+		<script>
+			function makeQuestion(prevNumber, number, prevAnswer, question, newQuestion=false, intro=' ', questionType = 0){
+				switch(questionType){
+					case 0:
+						if(prevAnswer[0]=='y'){
+							invAnswer = 'no'
+						}
+						else {
+							invAnswer = 'yes'
+						}
+						if(prevNumber){
+							document.getElementById("q"+prevNumber+invAnswer[0]).setAttribute('hidden', true)
+						}
+						if(intro){
+							prefix = test.name + ", "+intro
+						}
+						else{
+							prefix = ''
+						}
+						if(question && !newQuestion){
+							document.getElementById("testField").innerHTML += "<div>" + prefix + question + "<p id='q"+number+"y'><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"yes'>Да</p> <p id='q"+number+"n'><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"no'>Нет</p></div>"}
+						else if(newQuestion){
+							document.getElementById("testField").innerHTML = "("+number+"/4)<div>" + prefix + question + "<p id='q"+number+"y'><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"yes'>Да</p> <p id='q"+number+"n'><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"no'>Нет</p></div>"
+						}
+						break
+					case 1:
+						if(prevAnswer[0]=='y'){
+							invAnswer = 'no'
+						}
+						else {
+							invAnswer = 'yes'
+						}
+						if(prevNumber){
+							document.getElementById("q"+prevNumber+invAnswer[0]).setAttribute('hidden', true)
+						}
+						document.getElementById("testField").innerHTML = "("+number+"/4)<div>" + test.name +", "+ question + "<div id='q"+number+"n'><p><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"_0'>отличная</p> <p><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"_1'>удовлетворительная</p><p><input type='radio' name='q"+number+"' onclick='handleClick(this)' value='q"+number+"_2'>дохляк</p></div></div>"
+						break
+					case 2:
+						//
+						break
+				}
+
+			}
+			function showTestResult(){
+				if(test.points>=6){
+					$(function() {
+					var canvas = $('#canvas')[0];
+					canvas.width = $(window).width()*0.85;
+					canvas.height = $(window).height()*0.75;
+					var ctx = canvas.getContext('2d');
+					// init
+					ctx.fillStyle = '#000';
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					// objects
+					var listFire = [];
+					var listFirework = [];
+					var fireNumber = 10;
+					var center = {
+					x: canvas.width / 2,
+					y: canvas.height / 2
+					};
+					var range = 100;
+					for (var i = 0; i < fireNumber; i++) {
+						var fire = {
+							x: Math.random() * range / 2 - range / 4 + center.x,
+							y: Math.random() * range * 2 + canvas.height,
+							size: Math.random() + 0.5,
+							fill: '#fd1',
+							vx: Math.random() - 0.5,
+							vy: -(Math.random() + 4),
+							ax: Math.random() * 0.02 - 0.01,
+							far: Math.random() * range + (center.y - range)
+						};
+						fire.base = {
+						x: fire.x,
+						y: fire.y,
+						vx: fire.vx
+					};
+					//
+					listFire.push(fire);
+					}
+
+					function randColor() {
+					var r = Math.floor(Math.random() * 256);
+					var g = Math.floor(Math.random() * 256);
+					var b = Math.floor(Math.random() * 256);
+					var color = 'rgb($r, $g, $b)';
+					color = color.replace('$r', r);
+					color = color.replace('$g', g);
+					color = color.replace('$b', b);
+					return color;
+					}
+					(function loop() {
+					requestAnimationFrame(loop);
+					update();
+					draw();
+					})();
+
+					function update() {
+					for (var i = 0; i < listFire.length; i++) {
+					var fire = listFire[i];
+					//
+					if (fire.y <= fire.far) {
+					// case add firework
+					var color = randColor();
+					for (var i = 0; i < fireNumber * 5; i++) {
+					var firework = {
+					x: fire.x,
+					y: fire.y,
+					size: Math.random() + 1.5,
+					fill: color,
+					vx: Math.random() * 5 - 2.5,
+					vy: Math.random() * -5 + 1.5,
+					ay: 0.05,
+					alpha: 1,
+					life: Math.round(Math.random() * range / 2) + range / 2
+					};
+					firework.base = {
+					life: firework.life,
+					size: firework.size
+					};
+					listFirework.push(firework);
+					}
+					// reset
+					fire.y = fire.base.y;
+					fire.x = fire.base.x;
+					fire.vx = fire.base.vx;
+					fire.ax = Math.random() * 0.02 - 0.01;
+					}
+					//
+					fire.x += fire.vx;
+					fire.y += fire.vy;
+					fire.vx += fire.ax;
+					}
+					for (var i = listFirework.length - 1; i >= 0; i--) {
+					var firework = listFirework[i];
+					if (firework) {
+					firework.x += firework.vx;
+					firework.y += firework.vy;
+					firework.vy += firework.ay;
+					firework.alpha = firework.life / firework.base.life;
+					firework.size = firework.alpha * firework.base.size;
+					firework.alpha = firework.alpha > 0.6 ? 1 : firework.alpha;
+					//
+					firework.life--;
+					if (firework.life <= 0) {
+					listFirework.splice(i, 1);
+					}
+					}
+					}
+					}
+
+					function draw() {
+						// clear
+						ctx.globalCompositeOperation = 'source-over';
+						ctx.globalAlpha = 0.18;
+						ctx.fillStyle = '#000';
+						ctx.fillRect(0, 0, canvas.width, canvas.height);
+						// re-draw
+						ctx.globalCompositeOperation = 'screen';
+						ctx.globalAlpha = 1;
+					for (var i = 0; i < listFire.length; i++) {
+						var fire = listFire[i];
+						ctx.beginPath();
+						ctx.arc(fire.x, fire.y, fire.size, 0, Math.PI * 2);
+						ctx.closePath();
+						ctx.fillStyle = fire.fill;
+						ctx.fill();
+					}
+					for (var i = 0; i < listFirework.length; i++) {
+						var firework = listFirework[i];
+						ctx.globalAlpha = firework.alpha;
+						ctx.beginPath();
+						ctx.arc(firework.x, firework.y, firework.size, 0, Math.PI * 2);
+						ctx.closePath();
+						ctx.fillStyle = firework.fill;
+						ctx.fill();
+					}
+					}
+					})
+					document.getElementsByTagName("BODY")[0].style.color = "#FFF";
+					document.body.style.background = "#000";
+					document.getElementById("testField").innerHTML = '<h1>Вы выжили, '+test.name+"!</h1><div><canvas id='canvas' width='1156' height='648'></canvas><div>"
+					//startFirework()
+				}
+				else{
+					document.getElementById("testField").innerHTML = '<h1>Вы погибли...</h1><p><input type="button" id="b1" onclick="window.location.reload(false)" value=4> воскреснуть</input></p>'
+					
+					// повторить с интервалом 2 секунды
+					let buttonTimerId = setInterval(() => (function(){document.getElementById("b1").value--})(), 1500);
+
+					// остановить вывод через 5 секунд
+					setTimeout(() => { clearInterval(buttonTimerId); window.location.reload(false) }, 6000);
+				}
+			}
+			//обрботчик нажатия
+			function handleClick(myRadio) {
+					myRadio.removeAttribute('onclick')
+					myRadio.setAttribute('hidden', true)
+					switch (myRadio.value) {
+						case 'q1yes':
+							makeQuestion('1','1_1','yes','созданы в убежище запасы еды?')
+							break;
+						case 'q1no':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('1','2','no','eсть ли у вас оружие?',true)
+							//makeQuestion('1','1_1','no','созданы в убежище запасы еды?')
+							break
+						case 'q1_1yes':
+							test.toPoints(1,'add')
+							makeQuestion('1_1','1_2','yes','созданы в убежище запасы воды?')
+							break
+						case 'q1_1no':
+							test.toPoints(0,'add')
+							makeQuestion('1_1','1_2','no','созданы в убежище запасы воды?')
+							break
+						case 'q1_2yes':
+							test.toPoints(1,'add')
+							makeQuestion('1_2','1_3','yes','достаточно ли налажена система вентиляции?')
+							break
+						case 'q1_2no':
+							test.toPoints(0,'add')
+							makeQuestion('1_2','1_3','no','достаточно ли налажена система вентиляции?')
+							break
+						case 'q1_3yes':
+							test.toPoints(1,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('1_3','2','yes','eсть ли у вас оружие?',true)
+							break
+						case 'q1_3no':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('1_3','2','no','eсть ли у вас оружие?',true)
+							break
+						case 'q2yes':
+							makeQuestion('2','2_1','yes','умеете ли вы им владеть?')
+							break
+						case 'q2no':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('2','3','no','В какой физической форме вы находитесь?',true, '', 1)
+							//makeQuestion('2','2_1','no','умеете ли вы им владеть?')
+							break
+						case 'q2_1yes':
+							test.toPoints(1,'add')
+							makeQuestion('2_1','2_2','yes','имеются ли запасы боеприпасов?')
+							break
+						case 'q2_1no':
+							test.toPoints(0,'add')
+							makeQuestion('2_1','2_2','no','имеются ли запасы боеприпасов?')
+							break
+						case 'q2_2yes':
+							test.toPoints(1,'add')
+							makeQuestion('2_2','2_3','yes','в наличии ли ремонтный комплект?')
+							break
+						case 'q2_2no':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('2','3','no','В какой физической форме вы находитесь?',true, '', 1)
+							//makeQuestion('2_2','2_3','no','в наличии ли ремонтный комплект?')
+							break
+						case 'q2_3yes':
+							test.toPoints(1,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('2_3','3','yes','в какой физической форме вы находитесь?',true, '', 1)
+							break
+						case 'q2_3no':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',0)
+							makeQuestion('2_3','3','no','в какой физической форме вы находитесь?',true, '', 1)
+							break
+						case 'q3_0':
+							test.toPoints(2,'add')
+							test.toPoints(0,'result',1)
+							makeQuestion('3','4','yes','их схватили зомби и начали ими завтракать?',true, 'пожертвуете ли близкими если:<BR>')
+							//
+							break
+						case 'q3_1':
+							test.toPoints(1,'add')
+							test.toPoints(0,'result',1)
+							makeQuestion('3','4','yes','их схватили зомби и начали ими завтракать?',true, 'пожертвуете ли близкими если:<BR>')
+							//
+							break
+						case 'q3_2':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',1)
+							makeQuestion('3','4','yes','их схватили зомби и начали ими завтракать?',true, 'пожертвуете ли близкими если:<BR>')
+							//
+							break
+						case 'q4yes':
+							test.toPoints(1,'add')
+							makeQuestion('4','4_1','yes','еды осталось мало и делиться не хочется?',false,'')
+							break
+						case 'q4no':
+							test.toPoints(0,'add')
+							makeQuestion('4','4_1','no','еды осталось мало и делиться не хочется?',false,'')
+							break
+						case 'q4_1yes':
+							test.toPoints(1,'add')
+							makeQuestion('4_1','4_2','yes','они собираются совершить самоубийство от отчаяния?',false,'')
+							break
+						case 'q4_1no':
+							test.toPoints(0,'add')
+							makeQuestion('4_1','4_2','no','они собираются совершить самоубийство от отчаяния?',false,'')
+							break
+						case 'q4_2yes':
+							test.toPoints(1,'add')
+							test.toPoints(0,'result',1)
+							showTestResult()
+							break
+						case 'q4_2no':
+							test.toPoints(0,'add')
+							test.toPoints(0,'result',1)
+							showTestResult()
+							break
+
+					}
+			}
+			//тест
+			function SurvivalTest() {
+				this.name = ""
+				this.points = 0
+				this.currentPoints = 0
+				this.start = function() {
+					(function (name) {
+						makeQuestion('','1','','оборудовали ли вы убежище на случай нашествия зомби?',true)
+					})(this.name);
+				this.toPoints = function(points, action, typeOfQuestion=2){
+					if (action == 'add'){
+						this.currentPoints+=points
+					}
+					if (action == 'result'){
+						switch(typeOfQuestion){
+							// currentPoints >= 2
+							case 0:
+								if(this.currentPoints >= 2){
+									this.points += 2
+									this.currentPoints = 0
+								}
+								else{
+									this.currentPoints = 0
+								}
+								break
+							// currentPoints == points
+							case 1:
+								this.points += this.currentPoints
+								this.currentPoints = 0
+								break
+						}
+					}
+				}
+				};
+			}
+		</script>
+		<h1>Выживите ли вы в результате зомби апокалипсиса</h1>
+		<p>Введите имя: <input id='nameInput' type="text" placeholder="Имя"></p><div id="testField">
+		<script>
+		test = new SurvivalTest()
+		document.getElementById("nameInput").addEventListener('keydown', handler = function(event) {
+		  if (event.key == 'Enter') {
+				document.getElementById("nameInput").removeEventListener('keydown', handler)
+				document.getElementById("nameInput").setAttribute('disabled','disabled')
+				test.name = document.getElementById("nameInput").value
+				test.start()
+		  }
+		});
+		//<input type="radio">
+			//Оборудовали ли вы убежище на случай нашествия зомби?
+//да
+//созданы в убежище запасы еды?
+//созданы в убежище запасы воды?
+//достаточно ли налажена система вентиляции?
+//если 2 из 3 да - 2б
+//Есть ли у вас оружие?
+//да
+//- Умеете ли вы им владеть?
+//- Имеются ли запасы боеприпасов?
+//- В наличии ли ремонтный комплект?
+//2 из 3 - 2б
+//В какой физической форме вы находитесь?
+//отличная, удовлетворительная, дохляк. - 2 - 1 - 0
+//Пожертвуете ли близкими если:
+//- их схватили зомби и начали ими завтракать? - 1
+//- еды осталось мало и делиться не хочется? - 1
+//- они собираются совершить самоубийство от отчаяния? - 1
+//6 + "вы выжили, name"
+//6- вы погибли и тест запускается заново.
+			//document.getElementById("i1").innerHTML = "<BR>"+ r + " значений"// n**(n * 2**3)
+		</script>
+	</body>
+</html>
